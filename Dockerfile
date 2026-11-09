@@ -3,12 +3,13 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# TODO S2.6: Copy requirements-serving.txt and install it with pip.
-# Hint: COPY <file> .   then   RUN pip install --no-cache-dir -r <file>
-# COPY ... and RUN pip install ...
+# Install only the runtime dependencies (copied first for layer caching)
+COPY requirements-serving.txt .
+RUN pip install --no-cache-dir -r requirements-serving.txt
 
-# TODO S2.7: Copy the api/ folder and the models/ folder into the image.
-# COPY api/ ... and COPY models/ ...
+# Copy the API code and the trained model
+COPY api/ ./api/
+COPY models/ ./models/
 
 # Hugging Face expects port 7860. Azure will be told to use the same port.
 ENV PORT=7860

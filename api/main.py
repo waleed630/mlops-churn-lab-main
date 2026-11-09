@@ -8,7 +8,7 @@ import os
 
 import joblib
 import pandas as pd
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 from api.schemas import Customer, Prediction
 
@@ -17,9 +17,8 @@ RELEASE_PATH = os.getenv("RELEASE_PATH", "models/release.json")
 
 app = FastAPI(title="Churn Prediction API", version="1.0")
 
-# TODO S2.1: Load the trained pipeline ONCE, when the app starts.
-# Hint: joblib.load(MODEL_PATH)
-model = None
+# Load the trained pipeline ONCE, when the app starts.
+model = joblib.load(MODEL_PATH) if os.path.exists(MODEL_PATH) else None
 
 
 @app.get("/")
@@ -29,8 +28,7 @@ def root():
 
 @app.get("/health")
 def health():
-    # TODO S2.2: Return {"status": "ok", "model_loaded": <True/False>}
-    return {"status": "TODO"}
+    return {"status": "ok", "model_loaded": model is not None}
 
 
 @app.get("/version")
@@ -44,13 +42,14 @@ def version():
 
 @app.post("/predict", response_model=Prediction)
 def predict(customer: Customer):
-    # TODO S2.3: Turn the request into a one-row DataFrame.
-    # Hint: pd.DataFrame([customer.model_dump()])
-    row = None
+    if model is None:
+        raise HTTPException(status_code=503, detail="Model not loaded")
 
-    # TODO S2.4: Get the churn probability (class 1) and the 0/1 prediction.
-    # Hint: model.predict_proba(row)[0][1]   and   probability >= 0.5
-    probability = 0.0
+    # One-row DataFrame with the same columns used in training
+    row = pd.DataFrame([customer.model_dump()])
+
+    # Probability of class 1 (churn)
+    probability = float(model.predict_proba(row)[0][1])
 
     return Prediction(churn=probability >= 0.5,
                       churn_probability=round(probability, 4))
