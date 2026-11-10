@@ -3,7 +3,7 @@
 # Lab 4 tells you WHEN to run each part. Do not run the whole file at once.
 
 # ---------- PART A: names (change YOURNAME to something unique, lowercase, no spaces) ----------
-YOURNAME=ali123
+YOURNAME=waleed630
 RG=rg-mlops-$YOURNAME
 LOCATION=eastus
 ACR=acrmlops$YOURNAME            # must be globally unique, letters+numbers only
